@@ -10,14 +10,14 @@ import (
 )
 
 type BatchJob struct {
-	name            string
-	RecordReader    reader.RecordReader
-	RecordProcessor processor.RecordProcessor
-	RecordWriter    writer.RecordWriter
-	Parameters      JobParameters
-	Metrics         JobMetrics
-	Report          JobReport
-	Tracker         record.TrackRecord
+	name             string
+	RecordReader     reader.RecordReader
+	RecordProcessors []processor.RecordProcessor
+	RecordWriter     writer.RecordWriter
+	Parameters       JobParameters
+	Metrics          JobMetrics
+	Report           JobReport
+	Tracker          record.TrackRecord
 }
 
 func (b *BatchJob) GetName() string {
@@ -26,6 +26,7 @@ func (b *BatchJob) GetName() string {
 
 func (b *BatchJob) Call() JobReport {
 	start(b) //init code
+	defer tearDown(b)
 	b.openReader()
 	b.openWriter()
 	b.setStatus(STARTED)
@@ -35,15 +36,30 @@ func (b *BatchJob) Call() JobReport {
 		//b.writeBatch(batch) //ToDo revisit
 		readRecord := b.readRecord()
 		if readRecord != nil {
+			//Adding list of processors which needs to be executed in sequence
+			if len(b.RecordProcessors) > 0 {
+				readRecord = b.processRecord(readRecord)
+				//Chance of record becoming nil post processing. Especially when processors are used as Filters.
+				if readRecord == nil {
+					continue
+				}
+			}
+			//Chance of record becoming nil post processing. Especially when processors are used as Filters.
+			//if readRecord != nil {
 			batch.AddRecord(readRecord)
+			//}
 		} else {
 			b.Tracker.NoMoreRecords()
 		}
+
 	}
 
-	b.writeBatch(&batch)
+	if b.RecordWriter != nil {
+		b.writeBatch(&batch)
+	}
+
 	b.setStatus(STOPPING)
-	tearDown(b)
+
 	return b.Report
 }
 
@@ -52,7 +68,9 @@ func (b *BatchJob) openReader() {
 }
 
 func (b *BatchJob) openWriter() {
-	b.RecordWriter.Open()
+	if b.RecordWriter != nil {
+		b.RecordWriter.Open()
+	}
 }
 
 //ToDo
@@ -73,7 +91,7 @@ func (b BatchJob) readAndProcessBatch() record.Batch {
 	if readRecord != nil {
 		b.Metrics.ReadCount++
 	}
-	b.processRecord()
+	b.processRecord(nil)
 
 	return batch
 }
@@ -89,17 +107,31 @@ func (b *BatchJob) readRecord() record.Record {
 }
 
 //ToDO
-func (b *BatchJob) processRecord() {
-	//NO OP
+func (b *BatchJob) processRecord(rec record.Record) record.Record {
+	var processedRecord record.Record
+	for _, recordProcessor := range b.RecordProcessors {
+		processedRecord = recordProcessor.ProcessRecord(rec)
+		rec = processedRecord //Feeding the processed record to the next processor in line
+	}
+
+	return rec
 }
 
 func (b *BatchJob) writeBatch(batch *record.Batch) {
 	fmt.Println("Starting to Write")
-	b.RecordWriter.WriteRecords(batch)
+	if batch != nil {
+		b.RecordWriter.WriteRecords(batch)
+	}
 }
 
 func tearDown(bj *BatchJob) {
 	//Account for ABORTED if the process is interrupted
+
+	//Close all the Readers, Processor, Writers
+	//bj.RecordReader.Close()
+	//bj.RecordWriter.Close()
+
+	//Capturing End Time, Metrics
 	bj.Metrics.EndTime = time.Now()
 	bj.Report.Metrics = bj.Metrics
 	bj.setStatus(COMPLETED)

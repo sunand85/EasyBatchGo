@@ -1,6 +1,7 @@
 package reader
 
 import (
+	"bufio"
 	"core/record"
 	"strings"
 	"time"
@@ -28,9 +29,36 @@ func (n NoOpRecordReader) Close() {
 	panic("implement me")
 }
 
-// Underway
-type FileRecordReader struct {
-	Directory string
+//String Record Reader
+type StringRecordReader struct {
+	CurrentRecordNumber int
+	DataSource          string
+	splitString         []string
+	count               int
+	StringReader        *bufio.Reader
+}
+
+func (s *StringRecordReader) Open() {
+	s.CurrentRecordNumber = 0
+	s.StringReader = bufio.NewReader(strings.NewReader(s.DataSource))
+}
+
+func (s *StringRecordReader) ReadRecord() record.Record {
+	header := record.Header{
+		Number:        s.CurrentRecordNumber,
+		LocalDateTime: time.Time{},
+	}
+
+	line, _, err := s.StringReader.ReadLine()
+	if err != nil {
+		return nil
+	} else {
+		return record.NewStringRecord(header, string(line))
+	}
+}
+
+func (s *StringRecordReader) Close() {
+	//NO OP
 }
 
 // Split String Record Reader Implementation, splits by space
@@ -39,7 +67,6 @@ type SplitStringRecordReader struct {
 	DataSource          string
 	splitString         []string
 	count               int
-	//Scanner bufio.Scanner
 }
 
 func (srr *SplitStringRecordReader) Open() {
@@ -53,7 +80,6 @@ func (srr *SplitStringRecordReader) Open() {
 func (srr *SplitStringRecordReader) ReadRecord() record.Record {
 	header := record.Header{
 		Number:        srr.CurrentRecordNumber,
-		Source:        srr.DataSource,
 		LocalDateTime: time.Time{},
 	}
 
@@ -62,22 +88,10 @@ func (srr *SplitStringRecordReader) ReadRecord() record.Record {
 		srr.CurrentRecordNumber++
 		return record.NewStringRecord(header, value)
 	} else {
-		//return record.NewStringRecord(header, nil)
 		return nil
 	}
-	//split := strings.Split(srr.DataSource, " ")
-	//split.
-	//if srr.Scanner.Scan() {
-	//	payload := srr.Scanner.Text()
-	//	return record.NewStringRecord(header, payload)
-	//} else {
-	//	return record.NewStringRecord(header, nil)
-	//}
-
-	//return record.NewStringRecord(header, srr.DataSource)
 }
 
 func (srr *SplitStringRecordReader) Close() {
-	//panic("implement me")
 	//NO OP here
 }

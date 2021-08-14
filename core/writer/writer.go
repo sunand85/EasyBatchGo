@@ -8,6 +8,7 @@ import (
 type RecordWriter interface {
 	Open()
 	WriteRecords(batch *record.Batch)
+	Close()
 }
 
 //This does nothing
@@ -20,6 +21,10 @@ func (n NoOpWriter) Open() {
 
 func (n NoOpWriter) WriteRecords(batch *record.Batch) {
 	fmt.Println("Doing Nothing - NO_OP")
+}
+
+func (n NoOpWriter) Close() {
+	//NO OP
 }
 
 //Console Writer
@@ -35,4 +40,8 @@ func (s StandardOutputRecordWriter) WriteRecords(batch *record.Batch) {
 	for _, val := range batch.Records {
 		fmt.Println("Result : ", val.GetPayload())
 	}
+}
+
+func (s StandardOutputRecordWriter) Close() {
+	//NO OP
 }

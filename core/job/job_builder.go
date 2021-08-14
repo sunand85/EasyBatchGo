@@ -25,7 +25,7 @@ func (jb *JobBuilder) Reader(reader reader.RecordReader) *JobBuilder {
 }
 
 func (jb *JobBuilder) Processor(processor processor.RecordProcessor) *JobBuilder {
-	jb.BatchJob.RecordProcessor = processor
+	jb.BatchJob.RecordProcessors = append(jb.BatchJob.RecordProcessors, processor)
 	return jb
 }
 

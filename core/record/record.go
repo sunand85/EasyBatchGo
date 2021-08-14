@@ -21,6 +21,10 @@ type GenericRecord struct {
 	Payload interface{}
 }
 
+func NewGenericRecord(header Header, payload interface{}) *GenericRecord {
+	return &GenericRecord{Header: header, Payload: payload}
+}
+
 func (gr GenericRecord) GetHeader() Header {
 	return gr.Header
 }
@@ -67,8 +71,8 @@ func NewStringRecord(header Header, payload interface{}) *StringRecord {
 	return &StringRecord{Header: header, Payload: payload}
 }
 
-func (s StringRecord) GetHeader() Header {
-	panic("implement me")
+func (s *StringRecord) GetHeader() Header {
+	return s.Header
 }
 
 func (s *StringRecord) GetPayload() interface{} {
