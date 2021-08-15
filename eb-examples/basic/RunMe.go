@@ -1,40 +1,39 @@
 package main
 
 import (
-	core "core/job"
-	"core/reader"
-	"core/record"
-	"core/writer"
 	"fmt"
+	core "github.com/sunand85/EasyBatchGo/eb-core/job"
+	"github.com/sunand85/EasyBatchGo/eb-core/reader"
+	"github.com/sunand85/EasyBatchGo/eb-core/record"
+	"github.com/sunand85/EasyBatchGo/eb-core/writer"
 	"strings"
 )
 
 func main() {
 	println("========================")
 
-	recordReader := reader.SplitStringRecordReader{DataSource: "sunand is a good boy and razorpay uses golang"}
+	recordReader := reader.SplitStringRecordReader{DataSource: "sunand is a good boy and learning golang"}
 	recordWriter := writer.StandardOutputRecordWriter{}
-	job1 := core.NewJobBuilder().Name("first job").Reader(&recordReader).Writer(&recordWriter).Build()
-	job1.Call()
-
-	println("========================")
-
-	job2 := core.NewJobBuilder().Name("second job").Reader(&recordReader).Writer(&recordWriter).Build()
-	report := job2.Call()
+	job1 := core.NewJobBuilder().Name("First Job").Reader(&recordReader).Writer(&recordWriter).Build()
+	report := job1.Call()
 	fmt.Println("Read Count = ", report.Metrics.ReadCount)
-
 	println("========================")
 
-	stringRecordReader := reader.StringRecordReader{DataSource: "sunand is a good boy and sunand is learning golang"}
+	job2 := core.NewJobBuilder().Name("Second Job").Reader(&recordReader).Writer(&recordWriter).Build()
+	report = job2.Call()
+	fmt.Println("Read Count = ", report.Metrics.ReadCount)
+	println("========================")
+
+	stringRecordReader := reader.StringRecordReader{DataSource: "Appu is sleeping and Amma is sleeping and Appa is sleeping"}
+	lineTokenizer := NewLineTokenizer()
 	wordCounter := NewWordCounter()
 	job3 := core.NewJobBuilder().Name("Third Job").
 		Reader(&stringRecordReader).
-		Processor(NewLineTokenizer()).
+		Processor(lineTokenizer).
 		Processor(wordCounter).Build()
 
-	jobReport := job3.Call()
-	fmt.Println("Read Count = ", jobReport.Metrics.ReadCount)
-
+	report = job3.Call()
+	fmt.Println("Read Count = ", report.Metrics.ReadCount)
 	fmt.Println("Word Counter = ", wordCounter)
 }
 
@@ -64,12 +63,14 @@ func NewWordCounter() *WordCounter {
 func (w *WordCounter) ProcessRecord(record record.Record) record.Record {
 	tokens := record.GetPayload().([]string)
 	for _, val := range tokens {
-		i := w.words[val]
+		w.words[val]++
+
+		/*i := w.words[val]
 		if i == 0 {
 			w.words[val] = 1
 		} else {
 			w.words[val]++
-		}
+		}*/
 	}
 	return record
 }
@@ -77,3 +78,12 @@ func (w *WordCounter) ProcessRecord(record record.Record) record.Record {
 func (w *WordCounter) count() map[string]int {
 	return w.words
 }
+
+//ToDo write a JSON example
+type AgeValidator struct {
+}
+
+/*
+func (a *AgeValidator) ProcessRecord(r record.Record) record.Record {
+	//r.GetPayload()
+}*/
