@@ -1,11 +1,11 @@
 package core
 
 import (
-	"core/processor"
-	"core/reader"
-	"core/record"
-	"core/writer"
 	"fmt"
+	"github.com/sunand85/EasyBatchGo/eb-core/processor"
+	"github.com/sunand85/EasyBatchGo/eb-core/reader"
+	"github.com/sunand85/EasyBatchGo/eb-core/record"
+	"github.com/sunand85/EasyBatchGo/eb-core/writer"
 	"time"
 )
 
@@ -26,7 +26,6 @@ func (b *BatchJob) GetName() string {
 
 func (b *BatchJob) Call() JobReport {
 	start(b) //init code
-	defer tearDown(b)
 	b.openReader()
 	b.openWriter()
 	b.setStatus(STARTED)
@@ -44,10 +43,7 @@ func (b *BatchJob) Call() JobReport {
 					continue
 				}
 			}
-			//Chance of record becoming nil post processing. Especially when processors are used as Filters.
-			//if readRecord != nil {
 			batch.AddRecord(readRecord)
-			//}
 		} else {
 			b.Tracker.NoMoreRecords()
 		}
@@ -59,6 +55,7 @@ func (b *BatchJob) Call() JobReport {
 	}
 
 	b.setStatus(STOPPING)
+	tearDown(b)
 
 	return b.Report
 }
@@ -111,6 +108,9 @@ func (b *BatchJob) processRecord(rec record.Record) record.Record {
 	var processedRecord record.Record
 	for _, recordProcessor := range b.RecordProcessors {
 		processedRecord = recordProcessor.ProcessRecord(rec)
+		if processedRecord == nil {
+			return nil
+		}
 		rec = processedRecord //Feeding the processed record to the next processor in line
 	}
 
@@ -121,6 +121,7 @@ func (b *BatchJob) writeBatch(batch *record.Batch) {
 	fmt.Println("Starting to Write")
 	if batch != nil {
 		b.RecordWriter.WriteRecords(batch)
+		b.Metrics.WriteCount = batch.Size()
 	}
 }
 

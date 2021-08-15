@@ -2,7 +2,7 @@ package reader
 
 import (
 	"bufio"
-	"core/record"
+	"github.com/sunand85/EasyBatchGo/eb-core/record"
 	"strings"
 	"time"
 )
@@ -70,7 +70,6 @@ type SplitStringRecordReader struct {
 }
 
 func (srr *SplitStringRecordReader) Open() {
-	println("I am in Split String Record Reader")
 	println("Data - ", srr.DataSource)
 	srr.CurrentRecordNumber = 0
 	srr.splitString = strings.Split(srr.DataSource, " ")

@@ -1,8 +1,8 @@
 package writer
 
 import (
-	"core/record"
 	"fmt"
+	"github.com/sunand85/EasyBatchGo/eb-core/record"
 )
 
 type RecordWriter interface {

@@ -1,9 +1,9 @@
 package core
 
 import (
-	"core/processor"
-	"core/reader"
-	"core/writer"
+	"github.com/sunand85/EasyBatchGo/eb-core/processor"
+	"github.com/sunand85/EasyBatchGo/eb-core/reader"
+	"github.com/sunand85/EasyBatchGo/eb-core/writer"
 )
 
 type JobBuilder struct {
@@ -21,6 +21,16 @@ func (jb *JobBuilder) Name(name string) *JobBuilder {
 
 func (jb *JobBuilder) Reader(reader reader.RecordReader) *JobBuilder {
 	jb.BatchJob.RecordReader = reader
+	return jb
+}
+
+func (jb *JobBuilder) Validator(processor processor.RecordProcessor) *JobBuilder {
+	jb.BatchJob.RecordProcessors = append(jb.BatchJob.RecordProcessors, processor)
+	return jb
+}
+
+func (jb *JobBuilder) Filter(processor processor.RecordProcessor) *JobBuilder {
+	jb.BatchJob.RecordProcessors = append(jb.BatchJob.RecordProcessors, processor)
 	return jb
 }
 

@@ -1,6 +1,6 @@
 package util
 
-import "core/record"
+import "github.com/sunand85/EasyBatchGo/eb-core/record"
 
 type StatefulIterator interface {
 	Value() int
