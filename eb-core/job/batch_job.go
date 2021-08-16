@@ -26,6 +26,7 @@ func (b *BatchJob) GetName() string {
 
 func (b *BatchJob) Call() JobReport {
 	start(b) //init code
+	defer tearDown(b)
 	b.openReader()
 	b.openWriter()
 	b.setStatus(STARTED)
@@ -55,7 +56,7 @@ func (b *BatchJob) Call() JobReport {
 	}
 
 	b.setStatus(STOPPING)
-	tearDown(b)
+	finish(b)
 
 	return b.Report
 }
@@ -127,14 +128,19 @@ func (b *BatchJob) writeBatch(batch *record.Batch) {
 
 func tearDown(bj *BatchJob) {
 	//Account for ABORTED if the process is interrupted
+	//Close all the Readers, Writers
+	if bj.RecordReader != nil {
+		bj.RecordReader.Close()
+	}
+	if bj.RecordWriter != nil {
+		bj.RecordWriter.Close()
+	}
+}
 
-	//Close all the Readers, Processor, Writers
-	//bj.RecordReader.Close()
-	//bj.RecordWriter.Close()
-
+func finish(bj *BatchJob) {
 	//Capturing End Time, Metrics
 	bj.Metrics.EndTime = time.Now()
-	bj.Report.Metrics = bj.Metrics
+	//bj.Report.Metrics = bj.Metrics
 	bj.setStatus(COMPLETED)
 }
 
@@ -143,6 +149,7 @@ func start(bj *BatchJob) {
 	bj.setStatus(STARTING)
 	bj.Metrics.StartTime = time.Now()
 	bj.Tracker.MoreRecords = true
+	bj.Report.Metrics = &bj.Metrics
 }
 
 func (b *BatchJob) setStatus(jobStatus JobStatus) {

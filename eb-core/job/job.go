@@ -10,7 +10,7 @@ type Job interface {
 type JobReport struct {
 	Name       string
 	Parameters JobParameters
-	Metrics    JobMetrics
+	Metrics    *JobMetrics
 	Status     JobStatus
 	//systemProperties
 }

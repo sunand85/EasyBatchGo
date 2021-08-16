@@ -11,7 +11,8 @@ import (
 type FlatFileRecordReader struct {
 	Path                string
 	Charset             string
-	FileReader          *bufio.Reader
+	FlatFile            *os.File
+	FlatFileReader      *bufio.Reader
 	CurrentRecordNumber int
 }
 
@@ -24,7 +25,8 @@ func (ffr *FlatFileRecordReader) Open() {
 	if err != nil {
 		log.Fatal("[FILE] ", err)
 	}
-	ffr.FileReader = bufio.NewReader(file)
+	ffr.FlatFile = file
+	ffr.FlatFileReader = bufio.NewReader(ffr.FlatFile)
 	ffr.CurrentRecordNumber = 1
 }
 
@@ -35,7 +37,7 @@ func (ffr *FlatFileRecordReader) ReadRecord() record.Record {
 		LocalDateTime: time.Now(),
 	}
 
-	line, _, err := ffr.FileReader.ReadLine()
+	line, _, err := ffr.FlatFileReader.ReadLine()
 
 	if err != nil {
 		return nil
@@ -46,23 +48,5 @@ func (ffr *FlatFileRecordReader) ReadRecord() record.Record {
 }
 
 func (ffr *FlatFileRecordReader) Close() {
-	//NO OP
+	ffr.FlatFile.Close()
 }
-
-/*func (ffr *FlatFileRecordReader) ReadFile(path string) {
-	//file, err := ioutil.ReadFile("abc.csv")
-	file, err := os.Open("./eb-file/abc.csv")
-	if err != nil {
-		log.Fatal(err)
-	}
-	reader := bufio.NewReader(file)
-
-	for {
-		line, _, err := reader.ReadLine()
-		if err != nil {
-			break
-		}
-		fmt.Println("Record = " + string(line))
-	}
-}
-*/

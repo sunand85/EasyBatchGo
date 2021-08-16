@@ -64,10 +64,10 @@ func SliceIndex(limit int, predicate func(i int) bool) int {
 //========String Record ===========//
 type StringRecord struct {
 	Header  Header
-	Payload interface{}
+	Payload string
 }
 
-func NewStringRecord(header Header, payload interface{}) *StringRecord {
+func NewStringRecord(header Header, payload string) *StringRecord {
 	return &StringRecord{Header: header, Payload: payload}
 }
 
