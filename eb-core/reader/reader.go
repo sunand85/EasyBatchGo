@@ -33,9 +33,10 @@ func (n NoOpRecordReader) Close() {
 type StringRecordReader struct {
 	CurrentRecordNumber int
 	DataSource          string
-	splitString         []string
-	count               int
 	StringReader        *bufio.Reader
+
+	splitString []string
+	count       int
 }
 
 func (s *StringRecordReader) Open() {

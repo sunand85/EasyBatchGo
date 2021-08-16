@@ -1,0 +1,17 @@
+[
+  {
+    "name": "sunand",
+    "role": "engineer",
+    "age": 20
+  },
+  {
+    "name": "noodles",
+    "role": "engineer",
+    "age": 30
+  },
+  {
+    "name": "appu",
+    "role": "student",
+    "age": 3
+  }
+]
