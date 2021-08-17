@@ -2,7 +2,6 @@ package eb_gorm
 
 import (
 	"database/sql"
-	"fmt"
 	"github.com/sunand85/EasyBatchGo/eb-core/record"
 	"gorm.io/gorm"
 	"log"
@@ -61,7 +60,7 @@ func (g *GormRecordReader) ReadRecord() record.Record {
 		}
 		g.CurrentRecordNumber++
 		header := g.createHeader()
-		fmt.Println("Record Header : ", header)
+		//fmt.Println("Record Header : ", header)
 		return record.NewGenericRecord(header, g.TargetType)
 	} else {
 		return nil

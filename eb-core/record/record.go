@@ -1,6 +1,9 @@
 package record
 
-import "time"
+import (
+	"strconv"
+	"time"
+)
 
 type Record interface {
 	GetHeader() Header
@@ -13,6 +16,10 @@ type Header struct {
 	LocalDateTime time.Time
 	TargetType    interface{}
 	//Scanned bool
+}
+
+func (h Header) String() string {
+	return "Header: { Record Number : " + strconv.Itoa(h.Number) + ", Source=" + h.Source + ", DateTime : " + h.LocalDateTime.String() + " }"
 }
 
 //GenericRecord implementing Record Interface
