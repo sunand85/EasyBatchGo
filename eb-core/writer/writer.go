@@ -31,6 +31,10 @@ func (n NoOpWriter) Close() {
 type StandardOutputRecordWriter struct {
 }
 
+func NewStandardOutputRecordWriter() *StandardOutputRecordWriter {
+	return &StandardOutputRecordWriter{}
+}
+
 func (s StandardOutputRecordWriter) Open() {
 	//panic("implement me")
 	//No Op

@@ -11,8 +11,8 @@ type Header struct {
 	Number        int
 	Source        string
 	LocalDateTime time.Time
+	TargetType    interface{}
 	//Scanned bool
-
 }
 
 //GenericRecord implementing Record Interface
