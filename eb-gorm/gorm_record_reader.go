@@ -53,15 +53,17 @@ func (g *GormRecordReader) Open() {
 func (g *GormRecordReader) ReadRecord() record.Record {
 
 	if g.rows.Next() {
-		//result := make(map[string]interface{})
-		err := g.Db.ScanRows(g.rows, g.TargetType)
+		result := make(map[string]interface{})
+		//var result = g.TargetType
+		err := g.Db.ScanRows(g.rows, result)
+		//err := g.Db.ScanRows(g.rows, g.TargetType)
 		if err != nil {
 			log.Fatal("[SQL DB] Unable To Read record in the right format ", err)
 		}
 		g.CurrentRecordNumber++
 		header := g.createHeader()
-		//fmt.Println("Record Header : ", header)
-		return record.NewGenericRecord(header, g.TargetType)
+		//return record.NewGenericRecord(header, g.TargetType)
+		return record.NewGenericRecord(header, result)
 	} else {
 		return nil
 	}
