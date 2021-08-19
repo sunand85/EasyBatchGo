@@ -14,20 +14,20 @@ func main() {
 
 	recordReader := reader.SplitStringRecordReader{DataSource: "sunand is a good boy and learning golang"}
 	recordWriter := writer.StandardOutputRecordWriter{}
-	job1 := core.NewJobBuilder().Name("First Job").Reader(&recordReader).Writer(&recordWriter).Build()
+	job1 := core.NewJobBuilder().Name("Split String Job").Reader(&recordReader).Writer(&recordWriter).Build()
 	report := job1.Call()
-	fmt.Println("Read Count = ", report.Metrics.ReadCount)
+	fmt.Println("Metrics : ", report.Metrics)
 	println("========================")
-
-	job2 := core.NewJobBuilder().Name("Second Job").Reader(&recordReader).Writer(&recordWriter).Build()
-	report = job2.Call()
-	fmt.Println("Read Count = ", report.Metrics.ReadCount)
-	println("========================")
+	/*
+		job2 := core.NewJobBuilder().Name("Second Job").Reader(&recordReader).Writer(&recordWriter).Build()
+		report = job2.Call()
+		fmt.Println("Metrics : ", report.Metrics)
+		println("========================")*/
 
 	stringRecordReader := reader.StringRecordReader{DataSource: "Appu is sleeping and Amma is sleeping and Appa is sleeping"}
 	lineTokenizer := NewLineTokenizer()
 	wordCounter := NewWordCounter()
-	job3 := core.NewJobBuilder().Name("Third Job").
+	job3 := core.NewJobBuilder().Name("Word Count Job").
 		Reader(&stringRecordReader).
 		Processor(lineTokenizer).
 		Processor(wordCounter).Build()

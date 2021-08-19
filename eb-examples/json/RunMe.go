@@ -19,7 +19,7 @@ func main() {
 		Build()
 
 	report := job.Call()
-	fmt.Println("Metrics ", report.Metrics)
+	fmt.Println("Metrics : ", report.Metrics)
 }
 
 type AgeFilter struct {

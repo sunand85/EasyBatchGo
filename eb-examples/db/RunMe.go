@@ -14,7 +14,7 @@ import (
 )
 
 func main() {
-	//ToDo add proper create table syntax to run the program smoothly
+	fmt.Println("#############################################")
 	mysqlDataSource := "root:@tcp(127.0.0.1:3306)/demo?charset=utf8mb4&parseTime=True&loc=Local"
 	mysqldb, err := gorm.Open(mysql.Open(mysqlDataSource), &gorm.Config{})
 	if err != nil {
@@ -99,6 +99,8 @@ func main() {
 
 	fmt.Println("fileToDbReport Read Count : ", fileToDbReport.Metrics.ReadCount)
 	fmt.Println("fileToDbReport Write Count : ", fileToDbReport.Metrics.WriteCount)
+	fmt.Println("#############################################")
+
 }
 
 func loadDataIntoMySqlAppLogsTable(mysqldb *gorm.DB) {

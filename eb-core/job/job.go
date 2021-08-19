@@ -1,6 +1,9 @@
 package core
 
-import "time"
+import (
+	"strconv"
+	"time"
+)
 
 type Job interface {
 	GetName() string
@@ -26,6 +29,13 @@ type JobMetrics struct {
 	FilterCount   int
 	ErrorCount    int
 	CustomMetrics map[string]interface{}
+}
+
+func (jm JobMetrics) String() string {
+	return "{\n StartTime : " + jm.StartTime.String() +
+		",\n ReadCount : " + strconv.Itoa(jm.ReadCount) +
+		",\n WriteCount : " + strconv.Itoa(jm.WriteCount) +
+		",\n EndTime : " + jm.EndTime.String() + " \n}"
 }
 
 func (jr JobReport) toString() string {

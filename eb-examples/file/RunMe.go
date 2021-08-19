@@ -25,8 +25,8 @@ func main() {
 
 	report := job.Call()
 
-	fmt.Println("Read Count : ", report.Metrics.ReadCount)
-	fmt.Println("Write Count : ", report.Metrics.WriteCount)
+	fmt.Println("Metrics : ", report.Metrics)
+	//fmt.Println("Write Count : ", report.Metrics.WriteCount)
 	fmt.Println("===================================")
 	fmt.Println("The End")
 }
