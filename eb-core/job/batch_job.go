@@ -2,6 +2,7 @@ package core
 
 import (
 	"fmt"
+	"github.com/sunand85/EasyBatchGo/eb-core/listener"
 	"github.com/sunand85/EasyBatchGo/eb-core/processor"
 	"github.com/sunand85/EasyBatchGo/eb-core/reader"
 	"github.com/sunand85/EasyBatchGo/eb-core/record"
@@ -10,14 +11,16 @@ import (
 )
 
 type BatchJob struct {
-	name             string
-	RecordReader     reader.RecordReader
-	RecordProcessors []processor.RecordProcessor
-	RecordWriter     writer.RecordWriter
-	Parameters       JobParameters
-	Metrics          JobMetrics
-	Report           JobReport
-	Tracker          record.TrackRecord
+	name                string
+	RecordReader        reader.RecordReader
+	RecordProcessors    []processor.RecordProcessor
+	RecordWriter        writer.RecordWriter
+	ReadRecordListener  listener.ReadRecordListener
+	WriteRecordListener listener.WriteRecordListener
+	Parameters          JobParameters
+	Metrics             JobMetrics
+	Report              JobReport
+	Tracker             record.TrackRecord
 }
 
 func (b *BatchJob) GetName() string {
@@ -48,11 +51,16 @@ func (b *BatchJob) Call() JobReport {
 		} else {
 			b.Tracker.NoMoreRecords()
 		}
-
 	}
 
 	if b.RecordWriter != nil {
-		b.writeBatch(&batch)
+		if b.WriteRecordListener != nil {
+			b.WriteRecordListener.BeforeRecordWriting()
+			b.writeBatch(&batch)
+			b.WriteRecordListener.AfterRecordWriting()
+		} else {
+			b.writeBatch(&batch)
+		}
 	}
 
 	b.setStatus(STOPPING)

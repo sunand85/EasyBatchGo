@@ -3,12 +3,13 @@ package main
 import (
 	"fmt"
 	core "github.com/sunand85/EasyBatchGo/eb-core/job"
-	"github.com/sunand85/EasyBatchGo/eb-core/record"
 	"github.com/sunand85/EasyBatchGo/eb-core/writer"
+	file "github.com/sunand85/EasyBatchGo/eb-file"
 	eb_gorm "github.com/sunand85/EasyBatchGo/eb-gorm"
 	"gorm.io/driver/mysql"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 	"log"
 )
 
@@ -32,11 +33,14 @@ func main() {
 
 	report := mysqlJob.Call()
 	fmt.Println("Metrics Read Count : ", report.Metrics.ReadCount)
+	fmt.Println("Metrics Write Count : ", report.Metrics.WriteCount)
 
 	fmt.Println("#############################################")
 	//Postgresql Job
 	pgsqlDataSource := "host=localhost dbname=postgres port=5432 sslmode=disable"
-	pgdb, err := gorm.Open(postgres.Open(pgsqlDataSource), &gorm.Config{})
+	pgdb, err := gorm.Open(postgres.Open(pgsqlDataSource), &gorm.Config{
+		Logger: logger.Default.LogMode(logger.Error),
+	})
 	if err != nil {
 		log.Fatal("[SQL DB] Gorm PgSQL DB Connection Open failed ", pgsqlDataSource)
 	}
@@ -67,6 +71,34 @@ func main() {
 			break
 		}
 	}*/
+
+	fmt.Println("#############################################")
+	//File to Postgresql Job
+	pgsqlDataSource = "host=localhost dbname=postgres port=5432 sslmode=disable"
+	pgdb, err = gorm.Open(postgres.Open(pgsqlDataSource), &gorm.Config{
+		Logger: logger.Default.LogMode(logger.Error),
+	})
+	if err != nil {
+		log.Fatal("[SQL DB] Gorm PgSQL DB Connection Open failed ", pgsqlDataSource)
+	}
+
+	tweet := Tweet{}
+	gormRecordWriter := eb_gorm.NewGormRecordWriter(pgdb, tweet)
+	fileRecordReader := file.NewFlatFileRecordReader("./eb-examples/db/resources/abc.csv")
+	delimitedRecordMapper := file.NewDelimitedRecordMapper(tweet).WithFieldNames("id", "handle", "tweet")
+	writeListener := NewPgWriteListener(pgdb, tweet)
+	job := core.NewJobBuilder().Name("Read CSV and Write to DB").
+		Reader(fileRecordReader).
+		Processor(delimitedRecordMapper).
+		Filter(file.NewHeaderRecordFilter()).
+		Writer(gormRecordWriter).
+		WriteListener(writeListener).
+		Build()
+
+	fileToDbReport := job.Call()
+
+	fmt.Println("fileToDbReport Read Count : ", fileToDbReport.Metrics.ReadCount)
+	fmt.Println("fileToDbReport Write Count : ", fileToDbReport.Metrics.WriteCount)
 }
 
 func loadDataIntoMySqlAppLogsTable(mysqldb *gorm.DB) {
@@ -126,62 +158,4 @@ func loadDataIntoPostgresUsersTable(pgdb *gorm.DB) {
 
 	pgdb.Exec("Truncate Table Users")
 	pgdb.Create(input)
-}
-
-//============= Gorm Model's =================
-type AppLogs struct {
-	AppName string
-	Log     string
-	gorm.Model
-}
-
-type User struct {
-	Name  string
-	Age   uint
-	Email string
-	Phone string
-	gorm.Model
-}
-
-type AgeFilter struct {
-	key   string
-	value int64
-	op    string
-}
-
-func NewAgeFilter(key string, op string, value int64) *AgeFilter {
-	return &AgeFilter{key: key, value: value, op: op}
-}
-
-func (a *AgeFilter) ProcessRecord(r record.Record) record.Record {
-	valueMap := r.GetPayload().(map[string]interface{})
-	v := valueMap[a.key]
-	var handled bool
-	if v != nil {
-		lhs, ok := v.(int64)
-		if !ok {
-			fmt.Println("[Filter] Type Conversion Failed")
-			return nil
-		}
-		switch a.op {
-		case ">":
-			if lhs > a.value {
-				return record.NewGenericRecord(r.GetHeader(), r.GetPayload())
-			}
-			handled = true
-		case "<":
-			if lhs < a.value {
-				return record.NewGenericRecord(r.GetHeader(), r.GetPayload())
-			}
-			handled = true
-		default:
-			fmt.Println("[Filter] Operator is not valid : ", a.op)
-			return nil
-		}
-	}
-
-	if !handled {
-		fmt.Println("[Filter] Operator is not valid : ", a.key)
-	}
-	return nil
 }

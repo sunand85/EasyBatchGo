@@ -57,7 +57,7 @@ func (d *DelimitedRecordMapper) WithQualifier(qualifier string) *DelimitedRecord
 
 func (d *DelimitedRecordMapper) ProcessRecord(r record.Record) record.Record {
 	//panic("implement me")
-	fieldContents := make(map[string]string)
+	fieldContents := make(map[string]interface{})
 	fields := d.parseRecord(r)
 	for i, field := range fields {
 		var fieldName string
