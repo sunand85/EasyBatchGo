@@ -2,7 +2,9 @@ package main
 
 import (
 	"fmt"
+	jsoniter "github.com/json-iterator/go"
 	"github.com/sunand85/EasyBatchGo/eb-core/record"
+	"log"
 )
 
 type AgeFilter struct {
@@ -46,4 +48,40 @@ func (a *AgeFilter) ProcessRecord(r record.Record) record.Record {
 		fmt.Println("[Filter] Operator is not valid : ", a.key)
 	}
 	return nil
+}
+
+type TweetFilter struct {
+	Tweet Tweet
+}
+
+func NewTweetFilter(tweet Tweet) *TweetFilter {
+	return &TweetFilter{Tweet: tweet}
+}
+
+func (t *TweetFilter) ProcessRecord(r record.Record) record.Record {
+	json := jsoniter.ConfigFastest
+	toJson, err := json.MarshalToString(r.GetPayload())
+	if err != nil {
+		log.Fatal("[JSON] Map to Json String Marshalling Failed")
+	} else {
+		err := json.UnmarshalFromString(toJson, &t.Tweet)
+		if err != nil {
+			log.Fatal("[JSON] Json String to Object UnMarshalling Failed")
+		}
+	}
+
+	fmt.Println("Tweet : ", t.Tweet)
+	if t.isValid() {
+		return r
+	} else {
+		return nil
+	}
+}
+
+func (t *TweetFilter) isValid() bool {
+	if t.Tweet.Handle == "sunand" {
+		return false
+	} else {
+		return true
+	}
 }

@@ -38,7 +38,7 @@ func (b *BatchJob) Call() JobReport {
 		//b.readAndProcessBatch() //ToDo revisit
 		//b.writeBatch(batch) //ToDo revisit
 		readRecord := b.readRecord()
-		if readRecord != nil {
+		if readRecord != nil && readRecord.GetPayload() != nil {
 			//Adding list of processors which needs to be executed in sequence
 			if len(b.RecordProcessors) > 0 {
 				readRecord = b.processRecord(readRecord)

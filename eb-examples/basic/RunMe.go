@@ -14,7 +14,10 @@ func main() {
 
 	recordReader := reader.SplitStringRecordReader{DataSource: "sunand is a good boy and learning golang"}
 	recordWriter := writer.StandardOutputRecordWriter{}
-	job1 := core.NewJobBuilder().Name("Split String Job").Reader(&recordReader).Writer(&recordWriter).Build()
+	job1 := core.NewJobBuilder().Name("Split String Job").
+		Reader(&recordReader).
+		Writer(&recordWriter).
+		Build()
 	report := job1.Call()
 	fmt.Println("Metrics : ", report.Metrics)
 	println("========================")
@@ -30,7 +33,8 @@ func main() {
 	job3 := core.NewJobBuilder().Name("Word Count Job").
 		Reader(&stringRecordReader).
 		Processor(lineTokenizer).
-		Processor(wordCounter).Build()
+		Processor(wordCounter).
+		Build()
 
 	report = job3.Call()
 	fmt.Println("Read Count = ", report.Metrics.ReadCount)

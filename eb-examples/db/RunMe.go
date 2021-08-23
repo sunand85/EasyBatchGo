@@ -50,7 +50,7 @@ func main() {
 	pgsqlJob := core.NewJobBuilder().
 		Name("Postgresql Database Reader Job").
 		Reader(recordReader).
-		//Filter(NewAgeFilter("age", ">", 20)).
+		Filter(NewAgeFilter("age", ">", 20)).
 		Writer(writer.NewStandardOutputRecordWriter()).
 		Build()
 
@@ -91,6 +91,7 @@ func main() {
 		Reader(fileRecordReader).
 		Processor(delimitedRecordMapper).
 		Filter(file.NewHeaderRecordFilter()).
+		Filter(NewTweetFilter(Tweet{})).
 		Writer(gormRecordWriter).
 		WriteListener(writeListener).
 		Build()
@@ -99,6 +100,7 @@ func main() {
 
 	fmt.Println("fileToDbReport Read Count : ", fileToDbReport.Metrics.ReadCount)
 	fmt.Println("fileToDbReport Write Count : ", fileToDbReport.Metrics.WriteCount)
+	fmt.Print("Metrics : ", fileToDbReport.Metrics)
 	fmt.Println("#############################################")
 
 }
