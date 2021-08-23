@@ -44,6 +44,7 @@ func (b *BatchJob) Call() JobReport {
 				readRecord = b.processRecord(readRecord)
 				//Chance of record becoming nil post processing. Especially when processors are used as Filters.
 				if readRecord == nil {
+					b.Metrics.FilterCount++
 					continue
 				}
 			}

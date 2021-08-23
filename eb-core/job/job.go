@@ -34,6 +34,7 @@ type JobMetrics struct {
 func (jm JobMetrics) String() string {
 	return "{\n StartTime : " + jm.StartTime.String() +
 		",\n ReadCount : " + strconv.Itoa(jm.ReadCount) +
+		",\n FilterCount : " + strconv.Itoa(jm.FilterCount) +
 		",\n WriteCount : " + strconv.Itoa(jm.WriteCount) +
 		",\n EndTime : " + jm.EndTime.String() + " \n}"
 }
